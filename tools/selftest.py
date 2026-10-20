@@ -6,6 +6,7 @@ def digest(p):
     with p.open("rb") as f:
         return hashlib.file_digest(f, "sha256").hexdigest()
 def main():
+    (ROOT / ".work/reports/selftest/result.json").unlink(missing_ok=True)
     checks = []
     def check(name, condition):
         checks.append({"check": name, "pass": bool(condition)})

@@ -6,12 +6,12 @@ def sha(p): return hashlib.file_digest(open(p,"rb"),"sha256").hexdigest()
 def main():
  ap=argparse.ArgumentParser();ap.add_argument("--archive",type=pathlib.Path,required=True);ap.add_argument("--toolchain",type=pathlib.Path,required=True);ap.add_argument("--bsp-root",type=pathlib.Path,help="Regenerated processor BSP containing include/ and lib/");a=ap.parse_args()
  lock=json.loads((ROOT/"project.lock.json").read_text())
- if sha(a.archive)!=lock["vendor_rar"]["sha256"]:raise SystemExit("Vendor archive hash mismatch")
  dest=ROOT/".work/firmware/vendor";out=ROOT/".work/firmware/build";report=ROOT/".work/reports/firmware"
  if a.bsp_root:
   out=ROOT/".work/firmware/build-modern";report=ROOT/".work/reports/firmware-modern"
  for p in (dest,out,report):p.mkdir(parents=True,exist_ok=True)
  (report/"result.json").unlink(missing_ok=True)
+ if sha(a.archive)!=lock["vendor_rar"]["sha256"]:raise SystemExit("Vendor archive hash mismatch")
  lib=C.CDLL(ctypes.util.find_library("archive"))
  sig={"archive_read_new":(C.c_void_p,[]),"archive_read_support_filter_all":(C.c_int,[C.c_void_p]),"archive_read_support_format_all":(C.c_int,[C.c_void_p]),"archive_read_open_filename":(C.c_int,[C.c_void_p,C.c_char_p,C.c_size_t]),"archive_read_next_header":(C.c_int,[C.c_void_p,C.POINTER(C.c_void_p)]),"archive_entry_pathname":(C.c_char_p,[C.c_void_p]),"archive_read_data":(C.c_ssize_t,[C.c_void_p,C.c_void_p,C.c_size_t]),"archive_read_data_skip":(C.c_int,[C.c_void_p]),"archive_read_free":(C.c_int,[C.c_void_p])}
  for n,(ret,args) in sig.items():getattr(lib,n).restype=ret;getattr(lib,n).argtypes=args

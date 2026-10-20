@@ -12,6 +12,7 @@ done
 cd "$task_root"
 task_report="$task_root/.work/reports/firmware-modern"
 mkdir -p "$task_report"
+rm -f -- "$task_report/result.json"
 timeout 120 tools/run-xsct tools/tcl/generate-bsp.tcl "$task_root" > "$task_report/bsp-generation.log" 2>&1
 env PATH="$task_gcc:$PATH" make -C .work/firmware/bsp2025 > "$task_report/bsp-make.log" 2>&1
 python3 tools/build_vendor_firmware.py --archive "$task_archive" --toolchain "$task_gcc" --bsp-root "$task_root/.work/firmware/bsp2025/ps7_cortexa9_0"
