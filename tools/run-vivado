@@ -2,7 +2,7 @@
 set -euo pipefail
 task_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 stage="${1:-smoke}"
-case "$stage" in smoke|validate|synth|implement|signoff|hold-fix) ;; *) echo "Usage: $0 {smoke|validate|synth|implement|signoff|hold-fix}" >&2; exit 2;; esac
+case "$stage" in smoke|validate|synth|implement|signoff|hold-fix|export-hardware) ;; *) echo "Usage: $0 {smoke|validate|synth|implement|signoff|hold-fix|export-hardware}" >&2; exit 2;; esac
 tool="$(command -v vivado || true)"
 if [[ -z "$tool" ]]; then
   for candidate in "$HOME"/AMDDesignTools/20*/Vivado/bin/vivado /run/media/"$(id -un)"/*/AMDDesignTools/20*/Vivado/bin/vivado; do

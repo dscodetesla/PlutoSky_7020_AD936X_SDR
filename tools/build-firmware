@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+task_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+[[ $# == 1 ]] || { echo "Usage: $0 /local/path/vendor.rar" >&2; exit 2; }
+task_archive="$(realpath -- "$1")"
+task_version="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["toolchain"]["vivado_tested"])' "$task_root/project.lock.json")"
+task_gcc=""
+for candidate in "$HOME/AMDDesignTools/$task_version/gnu/aarch32/lin/gcc-arm-none-eabi/bin" /run/media/"$(id -un)"/*/AMDDesignTools/"$task_version"/gnu/aarch32/lin/gcc-arm-none-eabi/bin; do
+ [[ ! -x "$candidate/arm-none-eabi-gcc" ]] || task_gcc="$candidate"
+done
+[[ -n "$task_gcc" ]] || { echo "Pinned AMD ARM toolchain not found" >&2; exit 1; }
+cd "$task_root"
+task_report="$task_root/.work/reports/firmware-modern"
+mkdir -p "$task_report"
+timeout 120 tools/run-xsct tools/tcl/generate-bsp.tcl "$task_root" > "$task_report/bsp-generation.log" 2>&1
+env PATH="$task_gcc:$PATH" make -C .work/firmware/bsp2025 > "$task_report/bsp-make.log" 2>&1
+python3 tools/build_vendor_firmware.py --archive "$task_archive" --toolchain "$task_gcc" --bsp-root "$task_root/.work/firmware/bsp2025/ps7_cortexa9_0"
