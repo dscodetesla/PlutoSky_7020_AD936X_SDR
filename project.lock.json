@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "part_from_vendor_xsa": "xc7z020clg400-2",
+  "hdl": {
+    "repository": "https://github.com/DRubioG/AD936X_code.git",
+    "commit": "ef913f48a06e40b0a5a4f4416b1828d697c2e2bc",
+    "subdirectory": "test/board_examples/Vivado/AD936X_PL",
+    "project": "projects/fmcomms2/zc702/zc702.xpr"
+  },
+  "toolchain": {
+    "vivado_tested": "2025.2",
+    "python_dependencies": "standard library only"
+  }
+}

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+task_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+task_xsct=""
+for candidate in "$HOME"/AMDDesignTools/20*/Vitis/bin/xsct /run/media/"$(id -un)"/*/AMDDesignTools/20*/Vitis/bin/xsct; do
+  [[ ! -x "$candidate" ]] || task_xsct="$candidate"
+done
+[[ -n "$task_xsct" ]] || { echo "XSCT not found in AMDDesignTools installs" >&2; exit 1; }
+task_install="$(dirname -- "$(dirname -- "$(dirname -- "$task_xsct")")")"
+task_source="$task_install/gnu/aarch32/lin/gcc-arm-linux-gnueabi/x86_64-petalinux-linux/lib"
+task_lib="$task_root/.work/deps/xsct"
+mkdir -p "$task_lib"
+for name in libncurses libtinfo; do
+  source_file="$task_source/$name.so.5.9"
+  [[ -f "$source_file" ]] || { echo "Genuine ABI-5 library missing: $source_file" >&2; exit 1; }
+  readelf -d "$source_file" | grep -q "SONAME.*$name.so.5" || { echo "Library SONAME does not match ABI 5" >&2; exit 1; }
+  target="$task_lib/$name.so.5"
+  if [[ -e "$target" || -L "$target" ]]; then
+    [[ "$(readlink -- "$target")" == "$source_file" ]] || { echo "Refusing to replace $target" >&2; exit 1; }
+  else
+    ln -s -- "$source_file" "$target"
+  fi
+done
+exec env LD_LIBRARY_PATH="$task_lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" "$task_xsct" "$@"

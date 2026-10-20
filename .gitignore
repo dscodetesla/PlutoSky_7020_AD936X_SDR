@@ -1,0 +1,7 @@
+.venv/
+.work/
+.Xil/
+__pycache__/
+*.pyc
+*.jou
+vivado*.log

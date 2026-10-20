@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+task_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+stage="${1:-smoke}"
+case "$stage" in smoke|validate|synth|implement|signoff|hold-fix) ;; *) echo "Usage: $0 {smoke|validate|synth|implement|signoff|hold-fix}" >&2; exit 2;; esac
+tool="$(command -v vivado || true)"
+if [[ -z "$tool" ]]; then
+  for candidate in "$HOME"/AMDDesignTools/20*/Vivado/bin/vivado /run/media/"$(id -un)"/*/AMDDesignTools/20*/Vivado/bin/vivado; do
+    [[ ! -x "$candidate" ]] || tool="$candidate"
+  done
+fi
+[[ -n "$tool" ]] || { echo "Vivado executable not found" >&2; exit 1; }
+report="$task_root/.work/reports/$stage"
+mkdir -p "$report"
+cd "$report"
+exec "$tool" -mode batch -notrace -source "$task_root/tools/tcl/$stage.tcl" -log "$report/vivado.log" -journal "$report/vivado.jou" -tclargs "$task_root/.work/build/zc702/zc702.xpr" "$report"
